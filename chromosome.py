@@ -7,7 +7,7 @@ class chromosome():
         self.__velocity = [random.uniform(-6,6),random.uniform(-20,20)]
 
         self.__time = 0
-        # fitness is the time travel until finish the mission
+        # fitness is the distance form obj to dest 
         self.__fitness = 0
 
     def setVelocity(self,vel):
