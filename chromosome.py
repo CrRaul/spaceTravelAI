@@ -1,35 +1,19 @@
-from NeuralNetwork import NeuralNetwork
 import random
+import numpy as np
+from object import *
 
-
-class Chromosome():
+class chromosome():
     def __init__(self):
-        # 10 inputs - 1 =  distance from elem to leftLimit
-        #             2 =  distance from elem to upLimit
-        #             3 =  distance from elem to rightLimit
-        #             4 =  distance from elem to downLimit
-        #             5 =  distance from elem to first opponent  ( X axis)
-        #             6 =  distance from elem to first opponent ( Y axis)
-        #             7 =  distance from elem to second opponent ( X axis)
-        #             8 =  distance from elem to second opponent ( Y axis)
-        #             9 =  distance from elem to third opponent ( X axis)
-        #             10 = distance from elem to third opponent ( Y axis)
-        #             11 = speed
-        #             12 = dimension
-        
+        self.__velocity = [random.uniform(-6,6),random.uniform(-20,20)]
 
-        # 8 hidden
-        # 5 outputs - 1  = move to up
-        #             2  = move to right
-        #             2  = move to right
-        #             3  = move to down
-        #             4  = move to left
-        #             5  = stay
-        # 
-        self.__nn = NeuralNetwork(12 , 8, 5)
         self.__time = 0
-        # fitness is how long "time" elem survive
+        # fitness is the time travel until finish the mission
         self.__fitness = 0
+
+    def setVelocity(self,vel):
+        self.__velocity = vel
+    def getVelocity(self):
+        return self.__velocity
 
     def getFitness(self):
         return self.__fitness
@@ -38,23 +22,85 @@ class Chromosome():
     def setFitness(self, f):
         self.__fitness = f
 
-    def getWeightsIHPos(self, posI, posJ):
-        return self.__nn.getWeightsIHPos(posI, posJ)
-    def getWeightsHOPos(self, posI, posJ):
-        return self.__nn.getWeightsHOPos(posI, posJ)
-
-    def getDimensionWeightsIH(self):
-        return self.__nn.getDimensionWeightsIH()
-    def getDimensionWeightsHO(self):
-        return self.__nn.getDimensionWeightsHO()
-
-    def setWeightsIHPos(self, posI, posJ, val):
-        self.__nn.setWeightIHPos(posI, posJ, val)
-    def setWeightsHOPos(self, posI, posJ, val):
-        self.__nn.setWeightHOPos(posI, posJ, val)
-
-    
+    def mutation(self):
+        self.__velocity[0] += random.uniform(-0.2,0.2)
+        self.__velocity[1] += random.uniform(-0.2,0.2)
 
 
-    def evalCromozom(self, winWidht, winHeight, winMiddleLimit, speed, dimension):
-        pass
+    # for simulation
+    def attract(self, obj1, obj2):
+        G = 1
+
+        force = obj1.getPosition() - obj2.getPosition()
+        dist = np.sqrt(force[0]**2+force[1]**2)
+        force = force/dist  # normalize
+        strength = (G * obj1.getMass()*obj2.getMass()/(dist**2))
+        force *= strength
+
+        return force
+
+    def calcDistance(self,p1,p2):
+        return np.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
+
+    # simulate the mission
+    def evalCromozom(self):
+        time = 0
+
+        H,W = 600,1300
+
+        Sun = object(W//2,H//2)
+        Planet = object(W//3+120,H//2)
+
+        Obj = object(20,200)
+        Obj.setMass(2)
+        Obj.setVelocity(np.array(self.__velocity, dtype='float64'))
+
+
+        Sun.setMass(100)
+
+        Planet.setVelocity(np.array([0,-1.2], dtype='float64'))
+        Planet.setMass(25)
+
+        posS = Sun.getPosition()
+        while True:
+            posP = Planet.getPosition()
+            posO = Obj.getPosition()
+
+            # Sun attract the Planet0
+            force = self.attract(Sun,Planet)
+            Planet.applyForce(force)
+            Planet.update()
+
+            # Sun attract the rocket
+            force = self.attract(Sun,Obj)
+            Obj.applyForce(force)
+            Obj.update()
+
+            # Planet attract the rocket
+            force = self.attract(Planet,Obj)
+            Obj.applyForce(force)
+            Obj.update()
+
+            #####
+            posP = Planet.getPosition()
+            posO = Obj.getPosition()
+
+            # TEST finish mission
+            if posO[0] >= 1270 and posO[1] >= 160 and posO[1] <= 230:
+                break
+
+            # TEST crush
+                # border
+            if posO[0] < 10 or posO[0] > 590 or posO[1] < 10 or posO[1] > 1300:
+                break
+                # Sun
+            if posO[0] >= posS[0] - 7 and posO[0] <= posS[0] + 7 and posO[1] >= posS[1] - 7 and posO[1] <= posS[1] + 7:
+                break
+                # Planet
+            if posO[0] >= posP[0] - 5 and posO[0] <= posP[0] + 5 and posO[1] >= posP[1] - 5 and posO[1] <= posP[1] + 5:
+                break            
+
+            time += 1
+
+        #print(posO)
+        self.__fitness = self.calcDistance(posO,[1280,195])

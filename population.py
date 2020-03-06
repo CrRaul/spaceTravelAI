@@ -1,44 +1,33 @@
 from chromosome import chromosome
 import random
 
-class Population():
-    def __init__(self, dim, numOfGen):
+class population():
+    def __init__(self, dim):
         self.__dimension = dim
-        self.__numOfGen = numOfGen
-
         self.__population = []
-
 
     def initPop(self):
         for i in range(0, self.__dimension):
-            self.__population.append(Chromosome())
-
+            self.__population.append(chromosome())
 
     def fitPop(self):
         for i in range(0, self.__dimension):
-            self.__population[i].evalCromozom(400,500,200,3,10)
-
+            self.__population[i].evalCromozom()
 
     def getBest(self):
-        bestCr = Chromosome()
-        bestCr.setFitness(1000000)
+        bestCr = chromosome()
+        bestCr.setFitness(99999999)
         for i in range(1, self.__dimension):
-            if bestCr.getFitness() > self.__population[i].getFitness() and self.__population[i].getFitness() >= 1 and self.__population[i].getTime() >=3000:
+            if bestCr.getFitness() > self.__population[i].getFitness():
                 bestCr = self.__population[i]
-        
         return bestCr
 
-
-    def getNumOfGen(self):
-        return self.__numOfGen
     def getDim(self):
         return self.__dimension
-
 
     def setPop(self, pop):
         for i in range(0, self.__dimension):
             self.__population[i] = pop[i]
-
 
     def selection(self):
         pos1 = random.randint(0, self.__dimension-1)
@@ -48,39 +37,13 @@ class Population():
             return self.__population[pos1]
         return self.__population[pos2]
 
+    def xo(self,M, F):
+        c = chromosome()
 
-    def xo(M, F):
-        c = Chromosome()
+        v1 = M.getVelocity()
+        v2 = F.getVelocity()
 
-        # set weights IH for xo
-        for i in range(0, M.getDimensionWeightsIH()[0]):
-            for j in range(0, M.getDimensionWeightsIH()[1]):
-                r = random.uniform(0,1)
-                if r < 0.5:
-                    c.setWeightsIHPos(i,j,M.getWeightsIHPos(i,j))
-                else:
-                    c.setWeightsIHPos(i,j,F.getWeightsIHPos(i,j))
+        vxo = [(v1[0]+v2[0])/2,(v1[1]+v2[1])/2]
 
-
-        # set weights HO for xo
-        for i in range(0, M.getDimensionWeightsHO()[0]):
-            l = []
-            for j in range(0, M.getDimensionWeightsHO()[1]):
-                r = random.uniform(0,1)
-                if r < 0.5:
-                    c.setWeightsHOPos(i,j,M.getWeightsHOPos(i,j))
-                else:
-                    c.setWeightsHOPos(i,j,F.getWeightsHOPos(i,j))
-        return c
-
-    def mutation(c):
-        for i in range(0, 10):
-            posI = random.randint(0, 5)
-            posJ = random.randint(0, 11)
-            c.setWeightsIHPos(posI, posJ, c.getWeightsIHPos(posI, posJ) + random.uniform(-0.2,0.2))
-
-        for i in range(0, 5):
-            posI = random.randint(0, 4)
-            posJ = random.randint(0, 5)
-            c.setWeightsHOPos(posI, posJ, c.getWeightsHOPos(posI, posJ) + random.uniform(-0.2,0.2))
+        c.setVelocity(vxo)
         return c
