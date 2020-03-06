@@ -43,7 +43,16 @@ class population():
         v1 = M.getVelocity()
         v2 = F.getVelocity()
 
-        vxo = [(v1[0]+v2[0])/2,(v1[1]+v2[1])/2]
+        if random.uniform(0,1)<0.5:
+            vx = v1[0]
+        else:
+            vx = v2[0]
+        if random.uniform(0,1)<0.5:
+            vy = v1[1]
+        else:
+            vy = v2[1]
+
+        vxo = [vx,vy]
 
         c.setVelocity(vxo)
         return c

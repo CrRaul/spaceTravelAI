@@ -4,7 +4,7 @@ from object import *
 
 class chromosome():
     def __init__(self):
-        self.__velocity = [random.uniform(-6,6),random.uniform(-20,20)]
+        self.__velocity = [random.uniform(-2,2),random.uniform(-20,20)]
 
         self.__time = 0
         # fitness is the distance form obj to dest 
@@ -85,13 +85,9 @@ class chromosome():
             posP = Planet.getPosition()
             posO = Obj.getPosition()
 
-            # TEST finish mission
-            if posO[0] >= 1270 and posO[1] >= 160 and posO[1] <= 230:
-                break
-
             # TEST crush
                 # border
-            if posO[0] < 10 or posO[0] > 590 or posO[1] < 10 or posO[1] > 1300:
+            if posO[1] < 10 or posO[1] > 590 or posO[0] < 10 or posO[0] > 1270:
                 break
                 # Sun
             if posO[0] >= posS[0] - 7 and posO[0] <= posS[0] + 7 and posO[1] >= posS[1] - 7 and posO[1] <= posS[1] + 7:
@@ -103,4 +99,4 @@ class chromosome():
             time += 1
 
         #print(posO)
-        self.__fitness = self.calcDistance(posO,[1280,195])
+        self.__fitness = self.calcDistance(posO,[1280,400])
